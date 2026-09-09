@@ -46,7 +46,6 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
   @override
   Widget build(BuildContext context) {
     final contactsAsync = ref.watch(contactsStreamProvider);
-    final theme = context.theme;
 
     return Scaffold(
       appBar: AppBar(

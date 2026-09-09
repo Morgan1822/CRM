@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/errors/app_failure.dart';
 import '../../../data/repositories/auth_repository.dart';
 
 class AuthStateNotifier extends StateNotifier<AsyncValue<void>> {

@@ -24,7 +24,6 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
   @override
   Widget build(BuildContext context) {
     final tasksAsync = ref.watch(tasksStreamProvider);
-    final theme = context.theme;
 
     return Scaffold(
       appBar: AppBar(

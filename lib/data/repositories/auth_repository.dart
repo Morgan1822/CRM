@@ -23,7 +23,7 @@ class AuthRepository {
       );
       return response;
     } on AuthException catch (e, st) {
-      throw AppFailure(message: e.message, code: e.statusCode, stackTrace: st);
+      throw AppFailure.fromAuth(e, st);
     } catch (e, st) {
       throw AppFailure.fromSupabase(e, st);
     }
@@ -42,7 +42,7 @@ class AuthRepository {
       );
       return response;
     } on AuthException catch (e, st) {
-      throw AppFailure(message: e.message, code: e.statusCode, stackTrace: st);
+      throw AppFailure.fromAuth(e, st);
     } catch (e, st) {
       throw AppFailure.fromSupabase(e, st);
     }
@@ -52,7 +52,7 @@ class AuthRepository {
     try {
       await _client.auth.resetPasswordForEmail(email.trim());
     } on AuthException catch (e, st) {
-      throw AppFailure(message: e.message, code: e.statusCode, stackTrace: st);
+      throw AppFailure.fromAuth(e, st);
     } catch (e, st) {
       throw AppFailure.fromSupabase(e, st);
     }

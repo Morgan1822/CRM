@@ -24,7 +24,7 @@ class AppButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    Widget childContent = Row(
+    final Widget childContent = Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         if (isLoading)

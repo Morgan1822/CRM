@@ -1,3 +1,5 @@
+import 'package:supabase_flutter/supabase_flutter.dart';
+
 /// Standard domain failure representation
 class AppFailure implements Exception {
   final String message;
@@ -13,9 +15,53 @@ class AppFailure implements Exception {
   });
 
   @override
-  String toString() => 'AppFailure(code: $code, message: $message)';
+  String toString() => message;
+
+  factory AppFailure.fromAuth(AuthException error, [StackTrace? stackTrace]) {
+    final code = error.statusCode;
+    final msg = error.message.toLowerCase();
+
+    if (code == '429' || msg.contains('rate limit')) {
+      return AppFailure(
+        message: 'Email rate limit reached. Please wait a minute or turn off "Confirm email" in Supabase Auth settings for instant testing.',
+        code: '429',
+        originalError: error,
+        stackTrace: stackTrace,
+      );
+    }
+    if (msg.contains('user already registered') || msg.contains('already exists')) {
+      return AppFailure(
+        message: 'This email is already registered. Please sign in instead.',
+        code: 'USER_EXISTS',
+        originalError: error,
+        stackTrace: stackTrace,
+      );
+    }
+    if (msg.contains('invalid login credentials') || msg.contains('invalid credentials')) {
+      return AppFailure(
+        message: 'Invalid email or password. Please try again.',
+        code: 'INVALID_CREDENTIALS',
+        originalError: error,
+        stackTrace: stackTrace,
+      );
+    }
+
+    return AppFailure(
+      message: error.message,
+      code: error.statusCode,
+      originalError: error,
+      stackTrace: stackTrace,
+    );
+  }
 
   factory AppFailure.fromSupabase(dynamic error, [StackTrace? stackTrace]) {
+    if (error is AuthException) {
+      return AppFailure.fromAuth(error, stackTrace);
+    }
+    if (error is AppFailure) {
+      return error;
+    }
+
     final msg = error?.toString() ?? 'An unexpected database error occurred';
     if (msg.contains('JWT') || msg.contains('expired')) {
       return AppFailure(

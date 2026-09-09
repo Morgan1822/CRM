@@ -7,7 +7,6 @@ import '../../../data/repositories/contacts_repository.dart';
 import '../../../data/repositories/deals_repository.dart';
 import '../../../data/repositories/tasks_repository.dart';
 import '../../../shared/extensions/context_extensions.dart';
-import '../../../shared/widgets/empty_state_view.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../../../shared/widgets/status_badge.dart';
 

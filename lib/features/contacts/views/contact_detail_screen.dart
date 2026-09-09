@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
-import '../../../core/router/route_names.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../data/models/contact_model.dart';
 import '../../../data/repositories/contacts_repository.dart';
@@ -106,7 +105,6 @@ class ContactDetailScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // Avatar & Name Card
                 CircleAvatar(
                   radius: 36,
                   backgroundColor: theme.colorScheme.primary,
@@ -132,7 +130,6 @@ class ContactDetailScreen extends ConsumerWidget {
                 StatusBadge(status: contact.status),
                 const SizedBox(height: 24),
 
-                // Quick Communication Bar
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -161,7 +158,6 @@ class ContactDetailScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 24),
 
-                // Details Card
                 Card(
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
