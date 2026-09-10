@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/auth/user_permissions.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/utils/validators.dart';
 import '../../../data/models/deal_model.dart';
@@ -135,12 +136,13 @@ class _DealFormScreenState extends ConsumerState<DealFormScreen> {
     }
 
     final isEditing = widget.dealId != null;
+    final canDelete = ref.watch(canDeleteProvider);
     final contactsAsync = ref.watch(contactsStreamProvider);
 
     return Scaffold(
       appBar: AppBar(
         title: Text(isEditing ? 'Edit Deal' : 'New Deal'),
-        actions: isEditing
+        actions: isEditing && canDelete
             ? [
                 IconButton(
                   icon: const Icon(Icons.delete_outline_rounded),

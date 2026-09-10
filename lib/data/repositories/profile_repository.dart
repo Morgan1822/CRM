@@ -9,13 +9,36 @@ class ProfileRepository {
 
   ProfileRepository(this._client);
 
+  Stream<ProfileModel?> watchCurrentProfile() {
+    final user = _client.auth.currentUser;
+    if (user == null) {
+      return Stream.value(null);
+    }
+
+    return _client
+        .from('profiles')
+        .stream(primaryKey: ['id'])
+        .eq('id', user.id)
+        .map((rows) {
+          if (rows.isEmpty) {
+            return ProfileModel(
+              id: user.id,
+              email: user.email ?? '',
+              fullName: user.userMetadata?['full_name'] as String?,
+              role: 'Agent',
+            );
+          }
+          return ProfileModel.fromJson(rows.first);
+        });
+  }
+
   Future<ProfileModel?> getCurrentProfile() async {
     final user = _client.auth.currentUser;
     if (user == null) return null;
     try {
       final data = await _client
           .from('profiles')
-          .select()
+          .select('id, email, full_name, avatar_url, role, updated_at')
           .eq('id', user.id)
           .maybeSingle();
 
@@ -24,6 +47,7 @@ class ProfileRepository {
           id: user.id,
           email: user.email ?? '',
           fullName: user.userMetadata?['full_name'] as String?,
+          role: 'Agent',
         );
       }
       return ProfileModel.fromJson(data);
@@ -51,6 +75,11 @@ class ProfileRepository {
 
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   return ProfileRepository(ref.watch(supabaseClientProvider));
+});
+
+final currentProfileStreamProvider = StreamProvider.autoDispose<ProfileModel?>((ref) {
+  final repo = ref.watch(profileRepositoryProvider);
+  return repo.watchCurrentProfile();
 });
 
 final currentProfileProvider = FutureProvider.autoDispose<ProfileModel?>((ref) {

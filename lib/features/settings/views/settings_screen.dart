@@ -14,7 +14,7 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profileAsync = ref.watch(currentProfileProvider);
+    final profileAsync = ref.watch(currentProfileStreamProvider);
     final themeMode = ref.watch(themeProvider);
     final theme = context.theme;
 
@@ -68,7 +68,7 @@ class SettingsScreen extends ConsumerWidget {
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                profile.role ?? 'Sales Agent',
+                                profile.role ?? 'Agent',
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,

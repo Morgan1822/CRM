@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../core/auth/user_permissions.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../data/models/contact_model.dart';
 import '../../../data/repositories/contacts_repository.dart';
@@ -16,7 +17,8 @@ class ContactDetailScreen extends ConsumerWidget {
   const ContactDetailScreen({super.key, required this.contactId});
 
   Future<void> _makeCall(String phone) async {
-    final uri = Uri.parse('tel:$phone');
+    final dialable = Formatters.dialablePhone(phone);
+    final uri = Uri.parse('tel:$dialable');
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
 
@@ -26,7 +28,8 @@ class ContactDetailScreen extends ConsumerWidget {
   }
 
   Future<void> _sendSms(String phone) async {
-    final uri = Uri.parse('sms:$phone');
+    final dialable = Formatters.dialablePhone(phone);
+    final uri = Uri.parse('sms:$dialable');
     if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
 
@@ -63,6 +66,7 @@ class ContactDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = context.theme;
+    final canDelete = ref.watch(canDeleteProvider);
 
     return FutureBuilder<ContactModel>(
       future: ref.read(contactsRepositoryProvider).getContactById(contactId),
@@ -94,10 +98,11 @@ class ContactDetailScreen extends ConsumerWidget {
                 icon: const Icon(Icons.edit_outlined),
                 onPressed: () => context.push('/contacts/$contactId/edit'),
               ),
-              IconButton(
-                icon: const Icon(Icons.delete_outline_rounded),
-                onPressed: () => _deleteContact(context, ref),
-              ),
+              if (canDelete)
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded),
+                  onPressed: () => _deleteContact(context, ref),
+                ),
             ],
           ),
           body: SingleChildScrollView(
@@ -143,7 +148,7 @@ class ContactDetailScreen extends ConsumerWidget {
                     _buildActionButton(
                       context,
                       icon: Icons.message_rounded,
-                      label: 'Text',
+                      label: 'SMS',
                       enabled: contact.phone != null && contact.phone!.isNotEmpty,
                       onTap: () => _sendSms(contact.phone!),
                     ),
@@ -171,7 +176,12 @@ class ContactDetailScreen extends ConsumerWidget {
                         const Divider(height: 24),
                         _buildInfoRow(context, 'Email', contact.email ?? 'Not provided', Icons.email_outlined),
                         const SizedBox(height: 12),
-                        _buildInfoRow(context, 'Phone', contact.phone ?? 'Not provided', Icons.phone_outlined),
+                        _buildInfoRow(
+                          context,
+                          'Phone',
+                          contact.phone != null ? Formatters.formatIndianPhone(contact.phone) : 'Not provided',
+                          Icons.phone_outlined,
+                        ),
                         const SizedBox(height: 12),
                         _buildInfoRow(context, 'Company', contact.company ?? 'Not provided', Icons.business_outlined),
                         const SizedBox(height: 12),

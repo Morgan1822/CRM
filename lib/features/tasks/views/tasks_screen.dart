@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/auth/user_permissions.dart';
 import '../../../core/router/route_names.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../data/models/task_model.dart';
@@ -24,6 +25,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
   @override
   Widget build(BuildContext context) {
     final tasksAsync = ref.watch(tasksStreamProvider);
+    final canDelete = ref.watch(canDeleteProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -84,7 +86,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
                     separatorBuilder: (_, __) => const SizedBox(height: 8),
                     itemBuilder: (context, index) {
                       final task = filtered[index];
-                      return _buildTaskCard(context, task);
+                      return _buildTaskCard(context, task, canDelete);
                     },
                   ),
                 );
@@ -105,7 +107,66 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
     );
   }
 
-  Widget _buildTaskCard(BuildContext context, TaskModel task) {
+  Widget _buildTaskCard(BuildContext context, TaskModel task, bool canDelete) {
+    final cardContent = Card(
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        leading: Checkbox(
+          value: task.isCompleted,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+          onChanged: (val) {
+            if (val != null) {
+              ref.read(tasksRepositoryProvider).toggleTaskCompletion(task.id, val);
+            }
+          },
+        ),
+        title: Text(
+          task.title,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            decoration: task.isCompleted ? TextDecoration.lineThrough : null,
+            color: task.isCompleted ? Colors.grey : null,
+          ),
+        ),
+        subtitle: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (task.description != null && task.description!.isNotEmpty)
+              Text(
+                task.description!,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(fontSize: 12),
+              ),
+            const SizedBox(height: 2),
+            Row(
+              children: [
+                Icon(
+                  Icons.access_time_rounded,
+                  size: 13,
+                  color: task.isOverdue ? Colors.red : Colors.grey,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  task.dueDate != null ? Formatters.date(task.dueDate) : 'No due date',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: task.isOverdue ? Colors.red : Colors.grey,
+                    fontWeight: task.isOverdue ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+        trailing: StatusBadge(status: task.type),
+      ),
+    );
+
+    if (!canDelete) {
+      return cardContent;
+    }
+
     return Dismissible(
       key: Key(task.id),
       direction: DismissDirection.endToStart,
@@ -122,60 +183,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
         ref.read(tasksRepositoryProvider).deleteTask(task.id);
         context.showSnackBar('Task deleted');
       },
-      child: Card(
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-          leading: Checkbox(
-            value: task.isCompleted,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
-            onChanged: (val) {
-              if (val != null) {
-                ref.read(tasksRepositoryProvider).toggleTaskCompletion(task.id, val);
-              }
-            },
-          ),
-          title: Text(
-            task.title,
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              decoration: task.isCompleted ? TextDecoration.lineThrough : null,
-              color: task.isCompleted ? Colors.grey : null,
-            ),
-          ),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (task.description != null && task.description!.isNotEmpty)
-                Text(
-                  task.description!,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(fontSize: 12),
-                ),
-              const SizedBox(height: 2),
-              Row(
-                children: [
-                  Icon(
-                    Icons.access_time_rounded,
-                    size: 13,
-                    color: task.isOverdue ? Colors.red : Colors.grey,
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    task.dueDate != null ? Formatters.date(task.dueDate) : 'No due date',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: task.isOverdue ? Colors.red : Colors.grey,
-                      fontWeight: task.isOverdue ? FontWeight.bold : FontWeight.normal,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          trailing: StatusBadge(status: task.type),
-        ),
-      ),
+      child: cardContent,
     );
   }
 }

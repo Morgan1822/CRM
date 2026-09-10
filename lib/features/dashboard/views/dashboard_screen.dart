@@ -6,6 +6,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../data/repositories/contacts_repository.dart';
 import '../../../data/repositories/deals_repository.dart';
 import '../../../data/repositories/tasks_repository.dart';
+import '../../../data/repositories/profile_repository.dart';
 import '../../../shared/extensions/context_extensions.dart';
 import '../../../shared/widgets/loading_indicator.dart';
 import '../../../shared/widgets/status_badge.dart';
@@ -18,11 +19,36 @@ class DashboardScreen extends ConsumerWidget {
     final contactsAsync = ref.watch(contactsStreamProvider);
     final dealsAsync = ref.watch(dealsStreamProvider);
     final tasksAsync = ref.watch(tasksStreamProvider);
+    final profileAsync = ref.watch(currentProfileStreamProvider);
     final theme = context.theme;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        title: profileAsync.when(
+          data: (profile) => Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                profile?.fullName != null && profile!.fullName!.trim().isNotEmpty
+                    ? 'Hello, ${profile.fullName!.trim().split(' ').first}'
+                    : 'Dashboard',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              ),
+              if (profile?.role != null)
+                Text(
+                  profile!.role!,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+            ],
+          ),
+          loading: () => const Text('Dashboard'),
+          error: (_, __) => const Text('Dashboard'),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none_rounded),

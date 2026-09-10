@@ -48,4 +48,31 @@ class Formatters {
     }
     return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
   }
+
+  /// Format Indian phone number for display (e.g., +91 98765 43210)
+  static String formatIndianPhone(String? phone) {
+    if (phone == null || phone.trim().isEmpty) return '';
+    final digits = phone.replaceAll(RegExp(r'\D'), '');
+    if (digits.length == 10) {
+      return '+91 ${digits.substring(0, 5)} ${digits.substring(5)}';
+    }
+    if (digits.length == 12 && digits.startsWith('91')) {
+      return '+91 ${digits.substring(2, 7)} ${digits.substring(7)}';
+    }
+    return phone;
+  }
+
+  /// Get standard dialable URI string for phone call / SMS (+91...)
+  static String dialablePhone(String? phone) {
+    if (phone == null || phone.trim().isEmpty) return '';
+    var clean = phone.trim().replaceAll(RegExp(r'[\s\-\(\)]'), '');
+    if (!clean.startsWith('+')) {
+      if (clean.length == 10) {
+        clean = '+91$clean';
+      } else if (clean.length == 12 && clean.startsWith('91')) {
+        clean = '+$clean';
+      }
+    }
+    return clean;
+  }
 }

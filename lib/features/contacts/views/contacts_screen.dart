@@ -30,7 +30,8 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
   }
 
   Future<void> _makeCall(String phone) async {
-    final uri = Uri.parse('tel:$phone');
+    final dialable = Formatters.dialablePhone(phone);
+    final uri = Uri.parse('tel:$dialable');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
     }

@@ -29,9 +29,9 @@ class Validators {
 
   static String? phone(String? value) {
     if (value == null || value.trim().isEmpty) return null; // Optional
-    final cleanPhone = value.replaceAll(RegExp(r'[\s\-\(\)]'), '');
-    if (cleanPhone.length < 7) {
-      return 'Please enter a valid phone number';
+    final cleanPhone = value.replaceAll(RegExp(r'[\s\-\(\)\+]'), '');
+    if (cleanPhone.length < 10) {
+      return 'Please enter a valid 10-digit mobile number';
     }
     return null;
   }
