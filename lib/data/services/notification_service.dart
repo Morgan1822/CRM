@@ -77,16 +77,30 @@ class NotificationService {
         provisional: false,
       );
 
+      if (Platform.isIOS) {
+        await messaging.setForegroundNotificationPresentationOptions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+      }
+
       if (settings.authorizationStatus == AuthorizationStatus.authorized ||
           settings.authorizationStatus == AuthorizationStatus.provisional) {
         // Retrieve and sync token
-        final token = await messaging.getToken();
-        if (token != null) {
-          await _syncTokenToSupabase(token);
+        try {
+          final token = await _safelyGetFcmToken();
+          debugPrint('FCM Registration Token: $token');
+          if (token != null) {
+            await _syncTokenToSupabase(token);
+          }
+        } catch (tokenErr) {
+          debugPrint('Error getting initial FCM token: $tokenErr');
         }
 
         // Listen for token refresh
         messaging.onTokenRefresh.listen((newToken) {
+          debugPrint('FCM Token Refreshed: $newToken');
           _syncTokenToSupabase(newToken);
         });
 
@@ -111,9 +125,38 @@ class NotificationService {
             _handleDeepLink(route);
           }
         }
+        // Listen for Supabase auth changes to sync token immediately upon login
+        Supabase.instance.client.auth.onAuthStateChange.listen((data) {
+          if (data.session != null) {
+            syncCurrentUserToken();
+          }
+        });
       }
     } catch (e) {
-      debugPrint('FCM / Notification initialization error (expected if mock keys): $e');
+      debugPrint('FCM / Notification initialization error: $e');
+    }
+  }
+
+  static Future<String?> _safelyGetFcmToken() async {
+    final messaging = FirebaseMessaging.instance;
+    try {
+      if (Platform.isIOS) {
+        String? apnsToken = await messaging.getAPNSToken();
+        int retries = 0;
+        while (apnsToken == null && retries < 10) {
+          await Future.delayed(const Duration(milliseconds: 500));
+          apnsToken = await messaging.getAPNSToken();
+          retries++;
+        }
+        if (apnsToken == null) {
+          debugPrint('APNs token not yet available. Will sync when ready.');
+          return null;
+        }
+      }
+      return await messaging.getToken();
+    } catch (e) {
+      debugPrint('Error in _safelyGetFcmToken: $e');
+      return null;
     }
   }
 
@@ -148,17 +191,31 @@ class NotificationService {
     }
   }
 
+  static Future<void> syncCurrentUserToken() async {
+    try {
+      final token = await _safelyGetFcmToken();
+      if (token != null) {
+        await _syncTokenToSupabase(token);
+      }
+    } catch (e) {
+      debugPrint('Error in syncCurrentUserToken: $e');
+    }
+  }
+
   static Future<void> _syncTokenToSupabase(String token) async {
     try {
       final user = Supabase.instance.client.auth.currentUser;
       if (user != null) {
         final platform = Platform.isIOS ? 'ios' : 'android';
-        await Supabase.instance.client.from('device_tokens').upsert({
-          'user_id': user.id,
-          'token': token,
-          'platform': platform,
-          'updated_at': DateTime.now().toIso8601String(),
-        });
+        await Supabase.instance.client.from('device_tokens').upsert(
+          {
+            'user_id': user.id,
+            'token': token,
+            'platform': platform,
+            'updated_at': DateTime.now().toIso8601String(),
+          },
+          onConflict: 'token',
+        );
       }
     } catch (e) {
       debugPrint('Error syncing push token to Supabase: $e');
