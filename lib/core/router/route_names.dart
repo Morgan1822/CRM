@@ -21,4 +21,5 @@ class AppRoutes {
 
   static const String notifications = '/notifications';
   static const String settings = '/settings';
+  static const String teamRoles = '/team-roles';
 }

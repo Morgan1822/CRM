@@ -201,7 +201,7 @@ class _DealFormScreenState extends ConsumerState<DealFormScreen> {
               ),
               const SizedBox(height: 14),
               DropdownButtonFormField<String>(
-                value: _stage,
+                initialValue: _stage,
                 decoration: const InputDecoration(labelText: 'Pipeline Stage'),
                 items: const [
                   DropdownMenuItem(value: 'lead', child: Text('Lead')),
@@ -240,7 +240,7 @@ class _DealFormScreenState extends ConsumerState<DealFormScreen> {
               contactsAsync.when(
                 data: (contacts) {
                   return DropdownButtonFormField<String?>(
-                    value: _selectedContactId,
+                    initialValue: _selectedContactId,
                     decoration: const InputDecoration(
                       labelText: 'Associated Contact (Optional)',
                       prefixIcon: Icon(Icons.person_outline_rounded, size: 20),

@@ -176,7 +176,7 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         leading: CircleAvatar(
           radius: 22,
-          backgroundColor: theme.colorScheme.primary.withOpacity(0.12),
+          backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.12),
           foregroundColor: theme.colorScheme.primary,
           child: Text(
             Formatters.initials(contact.fullName),

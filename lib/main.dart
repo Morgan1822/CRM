@@ -21,7 +21,7 @@ void main() async {
   // Initialize Supabase
   await Supabase.initialize(
     url: EnvConfig.supabaseUrl,
-    anonKey: EnvConfig.supabaseAnonKey,
+    publishableKey: EnvConfig.supabaseAnonKey,
   );
 
   // Initialize Push Notification handlers (iOS/Android)

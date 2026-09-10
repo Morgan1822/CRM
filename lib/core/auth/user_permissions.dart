@@ -32,7 +32,8 @@ enum UserRole {
   /// Admins and Managers have permission to permanently delete records
   bool get canDelete => this == UserRole.admin || this == UserRole.manager;
 
-  /// Admins can manage system-wide settings & roles
+  /// Admins can manage system-wide settings, team members & roles
+  bool get canManageTeam => this == UserRole.admin;
   bool get canManageSystemSettings => this == UserRole.admin;
 
   /// All roles can create & edit records
@@ -48,6 +49,11 @@ final userRoleProvider = Provider<UserRole>((ref) {
     loading: () => UserRole.agent,
     error: (_, __) => UserRole.agent,
   );
+});
+
+final isAdminProvider = Provider<bool>((ref) {
+  final role = ref.watch(userRoleProvider);
+  return role.isAdmin;
 });
 
 final canDeleteProvider = Provider<bool>((ref) {

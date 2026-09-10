@@ -71,6 +71,39 @@ class ProfileRepository {
       throw AppFailure.fromSupabase(e, st);
     }
   }
+  Future<void> updateRole(String newRole) async {
+    final user = _client.auth.currentUser;
+    if (user == null) return;
+    try {
+      await _client.from('profiles').upsert({
+        'id': user.id,
+        'email': user.email ?? '',
+        'role': newRole,
+        'updated_at': DateTime.now().toIso8601String(),
+      });
+    } catch (e, st) {
+      throw AppFailure.fromSupabase(e, st);
+    }
+  }
+
+  Stream<List<ProfileModel>> watchTeamProfiles() {
+    return _client
+        .from('profiles')
+        .stream(primaryKey: ['id'])
+        .order('role', ascending: true)
+        .map((rows) => rows.map((json) => ProfileModel.fromJson(json)).toList());
+  }
+
+  Future<void> updateUserRole(String userId, String newRole) async {
+    try {
+      await _client.from('profiles').update({
+        'role': newRole,
+        'updated_at': DateTime.now().toIso8601String(),
+      }).eq('id', userId);
+    } catch (e, st) {
+      throw AppFailure.fromSupabase(e, st);
+    }
+  }
 }
 
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
@@ -85,4 +118,9 @@ final currentProfileStreamProvider = StreamProvider.autoDispose<ProfileModel?>((
 final currentProfileProvider = FutureProvider.autoDispose<ProfileModel?>((ref) {
   final repo = ref.watch(profileRepositoryProvider);
   return repo.getCurrentProfile();
+});
+
+final teamProfilesStreamProvider = StreamProvider.autoDispose<List<ProfileModel>>((ref) {
+  final repo = ref.watch(profileRepositoryProvider);
+  return repo.watchTeamProfiles();
 });

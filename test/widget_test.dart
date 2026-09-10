@@ -11,7 +11,7 @@ void main() {
     await EnvConfig.init();
     await Supabase.initialize(
       url: EnvConfig.supabaseUrl,
-      anonKey: EnvConfig.supabaseAnonKey,
+      publishableKey: EnvConfig.supabaseAnonKey,
       authOptions: const FlutterAuthClientOptions(
         autoRefreshToken: false,
       ),

@@ -280,7 +280,7 @@ class DashboardScreen extends ConsumerWidget {
                         child: ListTile(
                           onTap: () => context.push('/contacts/${contact.id}'),
                           leading: CircleAvatar(
-                            backgroundColor: theme.colorScheme.primary.withOpacity(0.12),
+                            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.12),
                             foregroundColor: theme.colorScheme.primary,
                             child: Text(Formatters.initials(contact.fullName)),
                           ),
@@ -319,7 +319,7 @@ class DashboardScreen extends ConsumerWidget {
         color: theme.cardTheme.color ?? theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: theme.dividerColor.withOpacity(0.4),
+          color: theme.dividerColor.withValues(alpha: 0.4),
         ),
       ),
       child: Column(
@@ -367,7 +367,7 @@ class DashboardScreen extends ConsumerWidget {
         decoration: BoxDecoration(
           color: theme.cardTheme.color ?? theme.colorScheme.surface,
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: theme.dividerColor.withOpacity(0.4)),
+          border: Border.all(color: theme.dividerColor.withValues(alpha: 0.4)),
         ),
         child: Column(
           children: [

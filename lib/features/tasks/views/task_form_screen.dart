@@ -99,7 +99,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
               ),
               const SizedBox(height: 14),
               DropdownButtonFormField<String>(
-                value: _taskType,
+                initialValue: _taskType,
                 decoration: const InputDecoration(labelText: 'Task Type'),
                 items: const [
                   DropdownMenuItem(value: 'todo', child: Text('To-Do')),
@@ -130,7 +130,7 @@ class _TaskFormScreenState extends ConsumerState<TaskFormScreen> {
               contactsAsync.when(
                 data: (contacts) {
                   return DropdownButtonFormField<String?>(
-                    value: _selectedContactId,
+                    initialValue: _selectedContactId,
                     decoration: const InputDecoration(
                       labelText: 'Related Contact (Optional)',
                       prefixIcon: Icon(Icons.person_outline_rounded, size: 20),

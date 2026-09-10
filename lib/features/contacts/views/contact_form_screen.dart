@@ -196,7 +196,7 @@ class _ContactFormScreenState extends ConsumerState<ContactFormScreen> {
               ),
               const SizedBox(height: 14),
               DropdownButtonFormField<String>(
-                value: _status,
+                initialValue: _status,
                 decoration: const InputDecoration(
                   labelText: 'Status',
                 ),

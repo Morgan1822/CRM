@@ -15,6 +15,7 @@ import '../../features/tasks/views/tasks_screen.dart';
 import '../../features/tasks/views/task_form_screen.dart';
 import '../../features/notifications/views/notifications_screen.dart';
 import '../../features/settings/views/settings_screen.dart';
+import '../../features/settings/views/team_roles_screen.dart';
 import '../../data/services/supabase_service.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -49,6 +50,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.register,
         builder: (context, state) => const RegisterScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.teamRoles,
+        builder: (context, state) => const TeamRolesScreen(),
       ),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
