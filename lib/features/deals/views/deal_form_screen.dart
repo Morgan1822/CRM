@@ -188,11 +188,14 @@ class _DealFormScreenState extends ConsumerState<DealFormScreen> {
               const SizedBox(height: 14),
               AppTextField(
                 controller: _valueController,
-                label: 'Deal Value (\$) *',
-                hint: '10000',
+                label: 'Deal Value (₹) *',
+                hint: '50000',
                 keyboardType: const TextInputType.numberWithOptions(decimal: true),
                 validator: Validators.number,
-                prefixIcon: const Icon(Icons.attach_money_rounded, size: 20),
+                prefixIcon: const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  child: Text('₹', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey)),
+                ),
               ),
               const SizedBox(height: 14),
               DropdownButtonFormField<String>(

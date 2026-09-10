@@ -15,7 +15,7 @@ class DealModel {
     required this.id,
     required this.title,
     required this.value,
-    this.currency = 'USD',
+    this.currency = 'INR',
     required this.stage,
     this.contactId,
     this.contactName,
@@ -30,7 +30,7 @@ class DealModel {
       id: json['id'] as String,
       title: json['title'] as String? ?? 'Untitled Deal',
       value: (json['value'] as num?)?.toDouble() ?? 0.0,
-      currency: json['currency'] as String? ?? 'USD',
+      currency: json['currency'] as String? ?? 'INR',
       stage: json['stage'] as String? ?? 'lead',
       contactId: json['contact_id'] as String?,
       contactName: json['contact'] != null

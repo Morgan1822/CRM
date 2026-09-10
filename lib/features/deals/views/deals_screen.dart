@@ -79,7 +79,7 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Deals Pipeline'),
+        title: const Text('Pipeline'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add_chart_rounded),

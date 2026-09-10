@@ -22,7 +22,7 @@ class DashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CRM Dashboard'),
+        title: const Text('Dashboard'),
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none_rounded),
@@ -56,7 +56,7 @@ class DashboardScreen extends ConsumerWidget {
                           return Formatters.currency(total);
                         },
                         loading: () => '...',
-                        error: (_, __) => '\$0',
+                        error: (_, __) => '₹0',
                       ),
                       icon: Icons.monetization_on_outlined,
                       color: Colors.green,
@@ -241,7 +241,7 @@ class DashboardScreen extends ConsumerWidget {
                       child: Padding(
                         padding: EdgeInsets.all(16.0),
                         child: Text(
-                          'No contacts added yet. Tap + to add your first lead.',
+                          'No contacts added yet. Tap + to add your first contact.',
                           style: TextStyle(color: Colors.grey),
                         ),
                       ),

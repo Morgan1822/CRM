@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/config/env_config.dart';
 import '../../../core/router/route_names.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/utils/formatters.dart';
@@ -21,7 +20,7 @@ class SettingsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings & Profile'),
+        title: const Text('Settings'),
       ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
@@ -63,13 +62,13 @@ class SettingsScreen extends ConsumerWidget {
                             ),
                             const SizedBox(height: 4),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
-                                color: theme.colorScheme.primary.withOpacity(0.1),
+                                color: theme.colorScheme.primary.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
-                                profile.role ?? 'Agent',
+                                profile.role ?? 'Sales Agent',
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w600,
@@ -103,8 +102,8 @@ class SettingsScreen extends ConsumerWidget {
             child: Column(
               children: [
                 RadioListTile<ThemeMode>(
-                  title: const Text('System Default'),
-                  subtitle: const Text('Follows your device system theme'),
+                  title: const Text('System Theme'),
+                  subtitle: const Text('Match device appearance'),
                   value: ThemeMode.system,
                   groupValue: themeMode,
                   onChanged: (mode) {
@@ -134,9 +133,9 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
 
-          // System / Connection Info
+          // Notifications & Shortcuts
           Text(
-            'System & Connection',
+            'Preferences',
             style: theme.textTheme.titleSmall?.copyWith(
               color: theme.textTheme.bodySmall?.color,
               fontWeight: FontWeight.bold,
@@ -147,21 +146,9 @@ class SettingsScreen extends ConsumerWidget {
             child: Column(
               children: [
                 ListTile(
-                  leading: const Icon(Icons.cloud_outlined),
-                  title: const Text('Supabase Backend'),
-                  subtitle: Text(
-                    EnvConfig.supabaseUrl,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                  trailing: const Icon(Icons.check_circle_rounded, color: Colors.green, size: 20),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.notifications_active_outlined),
-                  title: const Text('Push Notifications (FCM)'),
-                  subtitle: const Text('Configured for iOS & Android'),
+                  leading: const Icon(Icons.notifications_outlined),
+                  title: const Text('Notifications'),
+                  subtitle: const Text('View your alerts and updates'),
                   trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 14),
                   onTap: () => context.push(AppRoutes.notifications),
                 ),
@@ -170,7 +157,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 24),
 
-          // Sign Out Action
+          // Account Action
           Card(
             child: ListTile(
               leading: const Icon(Icons.logout_rounded, color: Colors.red),
@@ -207,7 +194,7 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: 24),
           Center(
             child: Text(
-              'CRM Companion v1.0.0 (Build 1)',
+              'CRM v1.0.0',
               style: TextStyle(fontSize: 12, color: theme.textTheme.bodySmall?.color),
             ),
           ),

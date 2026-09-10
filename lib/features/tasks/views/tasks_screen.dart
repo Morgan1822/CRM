@@ -27,7 +27,7 @@ class _TasksScreenState extends ConsumerState<TasksScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tasks & Follow-ups'),
+        title: const Text('Tasks'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add_task_rounded),

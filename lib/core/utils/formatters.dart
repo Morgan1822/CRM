@@ -1,14 +1,18 @@
 import 'package:intl/intl.dart';
 
 class Formatters {
-  static String currency(num amount, {String symbol = '\$'}) {
-    final format = NumberFormat.currency(symbol: symbol, decimalDigits: 0);
+  static String currency(num amount, {String symbol = '₹'}) {
+    final format = NumberFormat.currency(
+      locale: 'en_IN',
+      symbol: symbol,
+      decimalDigits: 0,
+    );
     return format.format(amount);
   }
 
   static String date(DateTime? dateTime) {
     if (dateTime == null) return 'N/A';
-    return DateFormat('MMM d, yyyy').format(dateTime);
+    return DateFormat('dd MMM yyyy').format(dateTime);
   }
 
   static String time(DateTime? dateTime) {
@@ -32,7 +36,7 @@ class Formatters {
     } else if (difference.inDays < 7) {
       return '${difference.inDays}d ago';
     } else {
-      return DateFormat('MMM d').format(dateTime);
+      return DateFormat('dd MMM').format(dateTime);
     }
   }
 
