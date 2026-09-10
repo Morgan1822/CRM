@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -16,17 +17,33 @@ import '../../features/tasks/views/task_form_screen.dart';
 import '../../features/notifications/views/notifications_screen.dart';
 import '../../features/settings/views/settings_screen.dart';
 import '../../features/settings/views/team_roles_screen.dart';
-import '../../data/services/supabase_service.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
 final _shellNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'shell');
 
+class GoRouterRefreshStream extends ChangeNotifier {
+  late final StreamSubscription<dynamic> _subscription;
+
+  GoRouterRefreshStream(Stream<dynamic> stream) {
+    notifyListeners();
+    _subscription = stream.asBroadcastStream().listen((dynamic _) => notifyListeners());
+  }
+
+  @override
+  void dispose() {
+    _subscription.cancel();
+    super.dispose();
+  }
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
-  // Listen to auth changes for reactive redirection
-  ref.watch(authStateChangesProvider);
+  final authStream = Supabase.instance.client.auth.onAuthStateChange;
+  final refreshNotifier = GoRouterRefreshStream(authStream);
+  ref.onDispose(() => refreshNotifier.dispose());
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
+    refreshListenable: refreshNotifier,
     initialLocation: AppRoutes.dashboard,
     redirect: (context, state) {
       final session = Supabase.instance.client.auth.currentSession;
