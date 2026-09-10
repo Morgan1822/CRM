@@ -121,12 +121,20 @@ class DashboardScreen extends ConsumerWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'Welcome back, $userName 👋',
-                          style: theme.textTheme.titleLarge?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 22,
-                            letterSpacing: -0.5,
+                        Text.rich(
+                          TextSpan(
+                            text: 'Welcome back, $userName ',
+                            style: theme.textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              fontSize: 22,
+                              letterSpacing: -0.5,
+                            ),
+                            children: const [
+                              TextSpan(
+                                text: '👋',
+                                style: TextStyle(fontWeight: FontWeight.normal, fontSize: 20),
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(height: 4),
