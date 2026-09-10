@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/router/route_names.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../data/models/deal_model.dart';
 import '../../../data/repositories/deals_repository.dart';
@@ -22,7 +23,14 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
   String _selectedStage = 'all';
 
   void _showStagePicker(DealModel deal) {
-    final stages = ['lead', 'qualified', 'proposal', 'negotiation', 'won', 'lost'];
+    final stages = [
+      {'key': 'lead', 'label': 'Lead / Discovery'},
+      {'key': 'qualified', 'label': 'Meeting Scheduled'},
+      {'key': 'proposal', 'label': 'Proposal Sent'},
+      {'key': 'negotiation', 'label': 'Negotiation'},
+      {'key': 'won', 'label': 'Closed Won'},
+      {'key': 'lost', 'label': 'Closed Lost'},
+    ];
 
     showModalBottomSheet(
       context: context,
@@ -38,26 +46,29 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                   child: Text(
                     'Move Deal Stage',
                     style: ctx.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ),
-                ...stages.map((stage) {
-                  final isCurrent = deal.stage == stage;
+                const Divider(height: 1),
+                ...stages.map((st) {
+                  final key = st['key']!;
+                  final label = st['label']!;
+                  final isCurrent = deal.stage == key;
                   return ListTile(
                     leading: Icon(
                       isCurrent ? Icons.radio_button_checked : Icons.radio_button_off,
                       color: isCurrent ? ctx.colorScheme.primary : null,
                     ),
-                    title: Text(stage.toUpperCase()),
-                    trailing: StatusBadge(status: stage),
+                    title: Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
+                    trailing: StatusBadge(status: key),
                     onTap: () async {
                       ctx.pop();
                       try {
-                        await ref.read(dealsRepositoryProvider).updateDealStage(deal.id, stage);
-                        if (mounted) context.showSnackBar('Deal stage updated');
+                        await ref.read(dealsRepositoryProvider).updateDealStage(deal.id, key);
+                        if (mounted) context.showSnackBar('Deal moved to $label');
                       } catch (e) {
                         if (mounted) context.showSnackBar(e.toString(), isError: true);
                       }
@@ -75,11 +86,10 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
   @override
   Widget build(BuildContext context) {
     final dealsAsync = ref.watch(dealsStreamProvider);
-    final theme = context.theme;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Pipeline'),
+        title: const Text('Deals & Pipeline'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add_chart_rounded),
@@ -94,22 +104,15 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
             child: Row(
-              children: ['all', 'lead', 'qualified', 'proposal', 'negotiation', 'won', 'lost']
-                  .map((stage) {
-                final isSelected = _selectedStage == stage;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 6.0),
-                  child: FilterChip(
-                    label: Text(stage.toUpperCase()),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      setState(() {
-                        _selectedStage = selected ? stage : 'all';
-                      });
-                    },
-                  ),
-                );
-              }).toList(),
+              children: [
+                _buildStageFilter('all', 'All Stages'),
+                _buildStageFilter('lead', 'Lead'),
+                _buildStageFilter('qualified', 'Meeting'),
+                _buildStageFilter('proposal', 'Proposal'),
+                _buildStageFilter('negotiation', 'Negotiation'),
+                _buildStageFilter('won', 'Won'),
+                _buildStageFilter('lost', 'Lost'),
+              ],
             ),
           ),
 
@@ -126,8 +129,8 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
 
                 if (filtered.isEmpty) {
                   return EmptyStateView(
-                    title: 'No Deals Found',
-                    description: 'Track pipeline revenue by creating your first deal.',
+                    title: 'No Deals in Pipeline',
+                    description: 'Track pipeline revenue and stages by creating deals.',
                     icon: Icons.monetization_on_outlined,
                     actionLabel: 'New Deal',
                     onAction: () => context.push(AppRoutes.dealCreate),
@@ -141,25 +144,32 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
                   onRefresh: () async => ref.invalidate(dealsStreamProvider),
                   child: Column(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                      // Header summary banner
+                      Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.primarySubtle,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: const Color(0xFFBFDBFE)),
+                        ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              '${filtered.length} Deals',
-                              style: TextStyle(
+                              '${filtered.length} Deals Active',
+                              style: const TextStyle(
                                 fontSize: 13,
-                                color: theme.textTheme.bodySmall?.color,
-                                fontWeight: FontWeight.w600,
+                                color: AppColors.primary,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                             Text(
                               'Total: ${Formatters.currency(totalValue)}',
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 13,
-                                color: theme.colorScheme.primary,
-                                fontWeight: FontWeight.bold,
+                                color: Color(0xFF059669),
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                           ],
@@ -169,7 +179,7 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
                         child: ListView.separated(
                           padding: const EdgeInsets.all(16.0),
                           itemCount: filtered.length,
-                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          separatorBuilder: (_, __) => const SizedBox(height: 10),
                           itemBuilder: (context, index) {
                             final deal = filtered[index];
                             return _buildDealCard(context, deal);
@@ -190,17 +200,53 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
         onPressed: () => context.push(AppRoutes.dealCreate),
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add_rounded),
+      ),
+    );
+  }
+
+  Widget _buildStageFilter(String key, String label) {
+    final isSelected = _selectedStage == key;
+    return Padding(
+      padding: const EdgeInsets.only(right: 6.0),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: isSelected,
+        selectedColor: AppColors.primarySubtle,
+        backgroundColor: Colors.white,
+        labelStyle: TextStyle(
+          color: isSelected ? AppColors.primary : AppColors.lightTextSecondary,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          fontSize: 12,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(100),
+          side: BorderSide(
+            color: isSelected ? const Color(0xFFBFDBFE) : AppColors.lightBorder,
+          ),
+        ),
+        onSelected: (selected) {
+          if (selected) {
+            setState(() => _selectedStage = key);
+          }
+        },
       ),
     );
   }
 
   Widget _buildDealCard(BuildContext context, DealModel deal) {
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.lightBorder),
+      ),
       child: InkWell(
         onTap: () => context.push('/deals/${deal.id}/edit'),
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(14),
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -221,7 +267,7 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 10),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -230,13 +276,19 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
-                      color: Colors.green,
+                      color: Color(0xFF059669),
                     ),
                   ),
                   if (deal.expectedCloseDate != null)
-                    Text(
-                      'Close: ${Formatters.date(deal.expectedCloseDate)}',
-                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    Row(
+                      children: [
+                        const Icon(Icons.event_outlined, size: 14, color: AppColors.lightTextMuted),
+                        const SizedBox(width: 4),
+                        Text(
+                          Formatters.date(deal.expectedCloseDate),
+                          style: const TextStyle(fontSize: 12, color: AppColors.lightTextMuted),
+                        ),
+                      ],
                     ),
                 ],
               ),
@@ -244,7 +296,7 @@ class _DealsScreenState extends ConsumerState<DealsScreen> {
                 const SizedBox(height: 8),
                 Text(
                   deal.notes!,
-                  style: const TextStyle(fontSize: 13, color: Colors.grey),
+                  style: const TextStyle(fontSize: 12, color: AppColors.lightTextMuted),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),

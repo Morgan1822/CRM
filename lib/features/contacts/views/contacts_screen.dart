@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/router/route_names.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../data/models/contact_model.dart';
 import '../../../data/repositories/contacts_repository.dart';
@@ -50,7 +51,7 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Contacts'),
+        title: const Text('Contacts & Leads'),
         actions: [
           IconButton(
             icon: const Icon(Icons.person_add_rounded),
@@ -67,8 +68,8 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
               controller: _searchController,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
-                hintText: 'Search contacts by name, email, company...',
-                prefixIcon: const Icon(Icons.search_rounded, size: 20),
+                hintText: 'Search by name, email, or company...',
+                prefixIcon: const Icon(Icons.search_rounded, size: 20, color: AppColors.lightTextMuted),
                 suffixIcon: _searchController.text.isNotEmpty
                     ? IconButton(
                         icon: const Icon(Icons.clear, size: 18),
@@ -88,21 +89,13 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
             child: Row(
-              children: ['all', 'lead', 'qualified', 'customer', 'inactive'].map((status) {
-                final isSelected = _selectedStatus == status;
-                return Padding(
-                  padding: const EdgeInsets.only(right: 6.0),
-                  child: FilterChip(
-                    label: Text(status.toUpperCase()),
-                    selected: isSelected,
-                    onSelected: (selected) {
-                      setState(() {
-                        _selectedStatus = selected ? status : 'all';
-                      });
-                    },
-                  ),
-                );
-              }).toList(),
+              children: [
+                _buildFilterTab('all', 'All'),
+                _buildFilterTab('lead', 'Leads'),
+                _buildFilterTab('qualified', 'Qualified'),
+                _buildFilterTab('customer', 'Customers'),
+                _buildFilterTab('inactive', 'Inactive'),
+              ],
             ),
           ),
           const SizedBox(height: 8),
@@ -130,8 +123,8 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
                   return EmptyStateView(
                     title: 'No Contacts Found',
                     description: q.isNotEmpty
-                        ? 'Try modifying your search or filter'
-                        : 'Start by creating your first contact or lead.',
+                        ? 'Try modifying your search query or selected filter.'
+                        : 'Build your customer network by adding contacts.',
                     icon: Icons.person_search_outlined,
                     actionLabel: 'Add Contact',
                     onAction: () => context.push(AppRoutes.contactCreate),
@@ -143,7 +136,7 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
                   child: ListView.separated(
                     padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                     itemCount: filtered.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
+                    separatorBuilder: (_, __) => const SizedBox(height: 10),
                     itemBuilder: (context, index) {
                       final contact = filtered[index];
                       return _buildContactCard(context, contact);
@@ -161,8 +154,39 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
         onPressed: () => context.push(AppRoutes.contactCreate),
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add_rounded),
+      ),
+    );
+  }
+
+  Widget _buildFilterTab(String key, String label) {
+    final isSelected = _selectedStatus == key;
+    return Padding(
+      padding: const EdgeInsets.only(right: 6.0),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: isSelected,
+        selectedColor: AppColors.primarySubtle,
+        backgroundColor: Colors.white,
+        labelStyle: TextStyle(
+          color: isSelected ? AppColors.primary : AppColors.lightTextSecondary,
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+          fontSize: 12,
+        ),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(100),
+          side: BorderSide(
+            color: isSelected ? const Color(0xFFBFDBFE) : AppColors.lightBorder,
+          ),
+        ),
+        onSelected: (selected) {
+          if (selected) {
+            setState(() => _selectedStatus = key);
+          }
+        },
       ),
     );
   }
@@ -170,17 +194,22 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
   Widget _buildContactCard(BuildContext context, ContactModel contact) {
     final theme = context.theme;
 
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.cardTheme.color,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.lightBorder),
+      ),
       child: ListTile(
         onTap: () => context.push('/contacts/${contact.id}'),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
         leading: CircleAvatar(
           radius: 22,
-          backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.12),
-          foregroundColor: theme.colorScheme.primary,
+          backgroundColor: AppColors.primarySubtle,
+          foregroundColor: AppColors.primary,
           child: Text(
             Formatters.initials(contact.fullName),
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
           ),
         ),
         title: Row(
@@ -188,7 +217,7 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
             Expanded(
               child: Text(
                 contact.fullName,
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
               ),
             ),
             StatusBadge(status: contact.status),
@@ -208,7 +237,7 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-              if (contact.email != null)
+              if (contact.email != null && contact.email!.isNotEmpty)
                 Text(
                   contact.email!,
                   style: TextStyle(fontSize: 12, color: theme.textTheme.bodySmall?.color),
@@ -221,12 +250,12 @@ class _ContactsScreenState extends ConsumerState<ContactsScreen> {
           children: [
             if (contact.phone != null && contact.phone!.isNotEmpty)
               IconButton(
-                icon: const Icon(Icons.phone_outlined, size: 20),
+                icon: const Icon(Icons.phone_outlined, size: 20, color: AppColors.primary),
                 onPressed: () => _makeCall(contact.phone!),
               ),
             if (contact.email != null && contact.email!.isNotEmpty)
               IconButton(
-                icon: const Icon(Icons.email_outlined, size: 20),
+                icon: const Icon(Icons.email_outlined, size: 20, color: AppColors.primary),
                 onPressed: () => _sendEmail(contact.email!),
               ),
           ],
